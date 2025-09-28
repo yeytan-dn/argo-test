@@ -27,7 +27,7 @@ spec:
     spec:
       containers:
       - name: rollouts-demo
-        image: hello-world
+        image: hello-world:v1
         ports:
         - name: http
           containerPort: 8080
