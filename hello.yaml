@@ -1,7 +1,15 @@
+apiVersion: v1
+   kind: Namespace
+   metadata:
+     name: test1
+
+
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: hello-world-deployment
+  namesace: test1
   labels:
     app: hello-world
 spec:
@@ -31,6 +39,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: hello-world
+  namesace: test1
 spec:
   selector:
     app: hello-world
