@@ -1,38 +1,73 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
-  name: rollouts-demo-test1
-  namespace: default
+  name: device-rollout
+  namespace: device-rollouts
+  labels:
+    app: device-rollout
 spec:
   replicas: 5
   strategy:
     canary:
       steps:
-      - setWeight: 20
-      - pause: {duration: 10}
-      - setWeight: 40
-      - pause: {duration: 10}
-      - setWeight: 60
-      - pause: {duration: 10}
-      - setWeight: 80
-      - pause: {duration: 10}
-  revisionHistoryLimit: 2
+      - setWeight: 5    # Canary stage (5%)
+      - pause:
+          duration: 60m
+      - setWeight: 20   # Early stage (20%)
+      - pause:
+          duration: 60m
+      - setWeight: 50   # Broad stage (50%)
+      - pause:
+          duration: 60m
+      - setWeight: 100  # Full stage (100%)
+      canaryService: device-rollout-canary
+      stableService: device-rollout-stable
+      trafficRouting:
+        nginx:
+          stableIngress: device-rollout-stable
+          annotationPrefix: nginx.ingress.kubernetes.io
   selector:
     matchLabels:
-      app: rollouts-demo
+      app: device-rollout
   template:
     metadata:
       labels:
-        app: rollouts-demo
+        app: device-rollout
     spec:
       containers:
-      - name: rollouts-demo
-        image: hello-world
-        ports:
-        - name: http
-          containerPort: 8080
-          protocol: TCP
+      - name: dummy
+        image: busybox:1.35
+        command: ["sleep", "infinity"]
         resources:
           requests:
-            memory: 32Mi
-            cpu: 5m
+            memory: "32Mi"
+            cpu: "10m"
+          limits:
+            memory: "64Mi"
+            cpu: "50m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: device-rollout-stable
+  namespace: device-rollouts
+spec:
+  ports:
+  - port: 80
+    targetPort: 8080
+    protocol: TCP
+  selector:
+    app: device-rollout
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: device-rollout-canary
+  namespace: device-rollouts
+spec:
+  ports:
+  - port: 80
+    targetPort: 8080
+    protocol: TCP
+  selector:
+    app: device-rollout
