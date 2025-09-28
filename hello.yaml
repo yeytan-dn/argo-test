@@ -11,27 +11,27 @@ metadata:
   labels:
     app: hello-world
 spec:
+  replicas: 2
   selector:
     matchLabels:
       app: hello-world
-  replicas: 2
   template:
     metadata:
       labels:
         app: hello-world
     spec:
       containers:
-      - name: hello-world
-        image: bhargavshah86/kube-test:v0.1
-        ports:
-        - containerPort: 80
-        resources:
-          limits:
-            memory: 256Mi
-            cpu: "250m"
-          requests:
-            memory: 128Mi
-            cpu: "80m"
+        - name: hello-world
+          image: bhargavshah86/kube-test:v0.1
+          ports:
+            - containerPort: 80
+          resources:
+            limits:
+              memory: 256Mi
+              cpu: "250m"
+            requests:
+              memory: 128Mi
+              cpu: "80m"
 ---
 apiVersion: v1
 kind: Service
@@ -39,6 +39,7 @@ metadata:
   name: hello-world
   namespace: test1
 spec:
+  type: NodePort
   selector:
     app: hello-world
   ports:
@@ -46,4 +47,3 @@ spec:
       port: 80
       targetPort: 80
       nodePort: 30081
-  type: NodePort
