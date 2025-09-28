@@ -1,15 +1,13 @@
 apiVersion: v1
-   kind: Namespace
-   metadata:
-     name: test1
-
-
-
+kind: Namespace
+metadata:
+  name: test1
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: hello-world-deployment
-  namesace: test1
+  namespace: test1
   labels:
     app: hello-world
 spec:
@@ -39,7 +37,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: hello-world
-  namesace: test1
+  namespace: test1
 spec:
   selector:
     app: hello-world
@@ -47,5 +45,5 @@ spec:
     - protocol: TCP
       port: 80
       targetPort: 80
-      nodePort: 30081   
+      nodePort: 30081
   type: NodePort
