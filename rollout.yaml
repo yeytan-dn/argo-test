@@ -97,7 +97,7 @@ spec:
   template:
     metadata:
       labels:
-        templateVersion: 1.0.0
+        templateVersion: 1.0.1
         app: device-rollout-parameterized
     spec:
       containers:
