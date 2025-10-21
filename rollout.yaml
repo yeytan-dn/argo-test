@@ -1,73 +1,115 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
-  name: device-rollout
-  namespace: device-rollouts
+  name: device-rollout-parameterized
+  namespace: default
   labels:
-    app: device-rollout
+    app: device-rollout-parameterized
 spec:
-  replicas: 5
+  replicas: 0 # No actual pods, just orchestrating device rollout
   strategy:
     canary:
+      # Failure handling configuration
+      abortScaleDownDelaySeconds: 30 # Wait 30 seconds before scaling down on abort
       steps:
-      - setWeight: 5    # Canary stage (5%)
-      - pause:
-          duration: 60m
-      - setWeight: 20   # Early stage (20%)
-      - pause:
-          duration: 60m
-      - setWeight: 50   # Broad stage (50%)
-      - pause:
-          duration: 60m
-      - setWeight: 100  # Full stage (100%)
-      canaryService: device-rollout-canary
-      stableService: device-rollout-stable
-      trafficRouting:
-        nginx:
-          stableIngress: device-rollout-stable
-          annotationPrefix: nginx.ingress.kubernetes.io
+        # Step 1: First batch of devices
+        - setWeight: 0 # No actual traffic, just step progression
+        - analysis:
+            templates:
+              - templateName: device-api-notification-uuid
+            args:
+              - name: step-name
+                value: 'step-1'
+              - name: device-list
+                value: '' # Will be overridden at runtime
+              - name: api-endpoint
+                value: 'https://discerning-surprise-production.up.railway.app/api/v1/start-config-update-on-devices'
+              - name: template-version
+                value: '1.0.0'
+        - pause: { duration: 5s }
+
+        # Step 2: Second batch of devices
+        - setWeight: 0
+        - analysis:
+            templates:
+              - templateName: device-api-notification-uuid
+            args:
+              - name: step-name
+                value: 'step-2'
+              - name: device-list
+                value: '' # Will be overridden at runtime
+              - name: api-endpoint
+                value: 'https://discerning-surprise-production.up.railway.app/api/v1/start-config-update-on-devices'
+              - name: template-version
+                value: '1.0.0'
+        - pause: { duration: 5s }
+
+        # Step 3: Third batch of devices
+        - setWeight: 0
+        - analysis:
+            templates:
+              - templateName: device-api-notification-uuid
+            args:
+              - name: step-name
+                value: 'step-3'
+              - name: device-list
+                value: '' # Will be overridden at runtime
+              - name: api-endpoint
+                value: 'https://discerning-surprise-production.up.railway.app/api/v1/start-config-update-on-devices'
+              - name: template-version
+                value: '1.0.0'
+        - pause: { duration: 5s }
+
+        # Step 4: Fourth batch of devices
+        - setWeight: 0
+        - analysis:
+            templates:
+              - templateName: device-api-notification-uuid
+            args:
+              - name: step-name
+                value: 'step-4'
+              - name: device-list
+                value: '' # Will be overridden at runtime
+              - name: api-endpoint
+                value: 'https://discerning-surprise-production.up.railway.app/api/v1/start-config-update-on-devices'
+              - name: template-version
+                value: '1.0.0'
+        - pause: { duration: 5s }
+
+        # Step 5: Final batch of devices
+        - setWeight: 0
+        - analysis:
+            templates:
+              - templateName: device-api-notification-uuid
+            args:
+              - name: step-name
+                value: 'step-5-final'
+              - name: device-list
+                value: '' # Will be overridden at runtime
+              - name: api-endpoint
+                value: 'https://discerning-surprise-production.up.railway.app/api/v1/start-config-update-on-devices'
+              - name: template-version
+                value: '1.0.0'
+
   selector:
     matchLabels:
-      app: device-rollout
+      app: device-rollout-parameterized
   template:
     metadata:
       labels:
-        app: device-rollout
+        app: device-rollout-parameterized
     spec:
       containers:
-      - name: dummy
-        image: busybox:1.35
-        command: ["sleep", "infinity"]
-        resources:
-          requests:
-            memory: "32Mi"
-            cpu: "10m"
-          limits:
-            memory: "64Mi"
-            cpu: "50m"
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: device-rollout-stable
-  namespace: device-rollouts
-spec:
-  ports:
-  - port: 80
-    targetPort: 8080
-    protocol: TCP
-  selector:
-    app: device-rollout
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: device-rollout-canary
-  namespace: device-rollouts
-spec:
-  ports:
-  - port: 80
-    targetPort: 8080
-    protocol: TCP
-  selector:
-    app: device-rollout
+        - name: device-orchestrator
+          image: busybox:1.35
+          command: ['sleep', '3600'] # Dummy container, since replicas=0 it won't run
+          env:
+            - name: ROLLOUT_TYPE
+              value: 'device-rollout-parameterized'
+          resources:
+            requests:
+              memory: '16Mi'
+              cpu: '10m'
+            limits:
+              memory: '32Mi'
+              cpu: '50m'
