@@ -1,116 +1,27 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
-  name: device-rollout-parameterized
+  name: nginx-rollout
   namespace: default
-  labels:
-    app: device-rollout-parameterized
 spec:
-  replicas: 0 # No actual pods, just orchestrating device rollout
-  strategy:
-    canary:
-      # Failure handling configuration
-      abortScaleDownDelaySeconds: 30 # Wait 30 seconds before scaling down on abort
-      steps:
-        # Step 1: First batch of devices
-        - setWeight: 0 # No actual traffic, just step progression
-        - analysis:
-            templates:
-              - templateName: device-api-notification-uuid
-            args:
-              - name: step-name
-                value: 'step-1'
-              - name: device-list
-                value: '' # Will be overridden at runtime
-              - name: api-endpoint
-                value: 'https://discerning-surprise-production.up.railway.app/api/v1/start-config-update-on-devices'
-              - name: template-version
-                value: '1.0.0'
-        - pause: { duration: 5s }
-
-        # Step 2: Second batch of devices
-        - setWeight: 0
-        - analysis:
-            templates:
-              - templateName: device-api-notification-uuid
-            args:
-              - name: step-name
-                value: 'step-2'
-              - name: device-list
-                value: '' # Will be overridden at runtime
-              - name: api-endpoint
-                value: 'https://discerning-surprise-production.up.railway.app/api/v1/start-config-update-on-devices'
-              - name: template-version
-                value: '1.0.0'
-        - pause: { duration: 5s }
-
-        # Step 3: Third batch of devices
-        - setWeight: 0
-        - analysis:
-            templates:
-              - templateName: device-api-notification-uuid
-            args:
-              - name: step-name
-                value: 'step-3'
-              - name: device-list
-                value: '' # Will be overridden at runtime
-              - name: api-endpoint
-                value: 'https://discerning-surprise-production.up.railway.app/api/v1/start-config-update-on-devices'
-              - name: template-version
-                value: '1.0.0'
-        - pause: { duration: 5s }
-
-        # Step 4: Fourth batch of devices
-        - setWeight: 0
-        - analysis:
-            templates:
-              - templateName: device-api-notification-uuid
-            args:
-              - name: step-name
-                value: 'step-4'
-              - name: device-list
-                value: '' # Will be overridden at runtime
-              - name: api-endpoint
-                value: 'https://discerning-surprise-production.up.railway.app/api/v1/start-config-update-on-devices'
-              - name: template-version
-                value: '1.0.0'
-        - pause: { duration: 5s }
-
-        # Step 5: Final batch of devices
-        - setWeight: 0
-        - analysis:
-            templates:
-              - templateName: device-api-notification-uuid
-            args:
-              - name: step-name
-                value: 'step-5-final'
-              - name: device-list
-                value: '' # Will be overridden at runtime
-              - name: api-endpoint
-                value: 'https://discerning-surprise-production.up.railway.app/api/v1/start-config-update-on-devices'
-              - name: template-version
-                value: '1.0.0'
-
+  replicas: 2
+  revisionHistoryLimit: 2
   selector:
     matchLabels:
-      app: device-rollout-parameterized
+      app: nginx-rollout
   template:
     metadata:
       labels:
-        templateVersion: 1.0.0
-        app: device-rollout-parameterized
+        app: nginx-rollout
     spec:
       containers:
-        - name: device-orchestrator
-          image: busybox:1.35
-          command: ['sleep', '3600'] # Dummy container, since replicas=0 it won't run
-          env:
-            - name: ROLLOUT_TYPE
-              value: 'device-rollout-parameterized'
-          resources:
-            requests:
-              memory: '16Mi'
-              cpu: '10m'
-            limits:
-              memory: '32Mi'
-              cpu: '50m'
+        - name: nginx
+          image: nginx:1.25
+          ports:
+            - containerPort: 80
+  strategy:
+    canary:
+      steps:
+        - setWeight: 50
+        - pause: {duration: 10s}
+        - setWeight: 100
