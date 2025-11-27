@@ -1,0 +1,56 @@
+# AI Generated file
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  annotations:
+    rollout-manager/devices: device-001,device-002,device-003
+  labels:
+    app: My First Rollout
+    rollout-id: 01KB28K68GTGK527KCS4JCDSNB
+    rollout-manager: "true"
+  name: 01KB28K68GTGK527KCS4JCDSNB
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: My First Rollout
+  strategy:
+    canary:
+      steps:
+      - setWeight: 5
+      - analysis:
+          args:
+          - name: rollout-percentage
+            value: "5"
+          - name: device-subset
+            value: '["device-001"]'
+          templates:
+          - templateName: rollout-analysis-01KB28K68GTGK527KCS4JCDSNB
+      - pause:
+          duration: 60m
+      - setWeight: 20
+      - pause:
+          duration: 60m
+      - setWeight: 50
+      - pause:
+          duration: 60m
+      - setWeight: 100
+      - analysis:
+          args:
+          - name: rollout-percentage
+            value: "100"
+          - name: device-subset
+            value: '["device-002","device-003"]'
+          templates:
+          - templateName: rollout-analysis-01KB28K68GTGK527KCS4JCDSNB
+  template:
+    metadata:
+      labels:
+        app: My First Rollout
+    spec:
+      containers:
+      - image: nginx:1.25-alpine
+        name: My First Rollout
+        ports:
+        - containerPort: 80
