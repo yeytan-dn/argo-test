@@ -5,7 +5,7 @@ metadata:
   annotations:
     rollout-manager/devices: device-001,device-002,device-003
   labels:
-    app: My First Rollout
+    app: test-rollout
     rollout-id: 01KB28K68GTGK527KCS4JCDSNB
     rollout-manager: "true"
   name: rollout-analysis-01KB28K68GTGK527KCS4JCDSNB
@@ -55,7 +55,7 @@ spec:
                 - name: ROLLOUT_ID
                   value: 01KB28K68GTGK527KCS4JCDSNB
                 - name: ROLLOUT_NAME
-                  value: My First Rollout
+                  value: test-rollout
                 - name: CMS_BASE_URL
                   value: https://cms.example.com
                 - name: CMS_CONFIG_ROLLOUT_PATH

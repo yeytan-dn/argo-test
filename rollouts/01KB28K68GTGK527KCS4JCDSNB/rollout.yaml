@@ -5,7 +5,7 @@ metadata:
   annotations:
     rollout-manager/devices: device-001,device-002,device-003
   labels:
-    app: My First Rollout
+    app: test-rollout
     rollout-id: 01KB28K68GTGK527KCS4JCDSNB
     rollout-manager: "true"
   name: 01KB28K68GTGK527KCS4JCDSNB
@@ -14,7 +14,7 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: My First Rollout
+      app: test-rollout
   strategy:
     canary:
       steps:
@@ -47,10 +47,10 @@ spec:
   template:
     metadata:
       labels:
-        app: My First Rollout
+        app: test-rollout
     spec:
       containers:
       - image: nginx:1.25-alpine
-        name: My First Rollout
+        name: test-rollout
         ports:
         - containerPort: 80
