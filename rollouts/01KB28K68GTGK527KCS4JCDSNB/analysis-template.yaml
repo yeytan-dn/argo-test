@@ -9,7 +9,7 @@ metadata:
     rollout-id: 01KB28K68GTGK527KCS4JCDSNB
     rollout-manager: "true"
   name: rollout-analysis-01KB28K68GTGK527KCS4JCDSNB
-  namespace: production
+  namespace: default
 spec:
   args:
   - name: rollout-percentage
