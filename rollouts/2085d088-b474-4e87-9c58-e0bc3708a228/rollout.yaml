@@ -57,6 +57,7 @@ spec:
       labels:
         app: example-rollout
     spec:
+      paused: true
       containers:
       - image: nginx:1.25-alpine
         name: example-rollout
