@@ -57,7 +57,7 @@ spec:
       labels:
         app: example-rollout
       annotations:
-        rollout-restarted-at: "2025-11-30T10:16:00Z"
+        rollout-restarted-at: "2025-11-30T10:17:00Z"
     spec:
       containers:
       - image: nginx:1.25-alpine
