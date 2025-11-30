@@ -1,0 +1,74 @@
+# AI Generated file
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  annotations:
+    rollout-manager/devices: device-1,device-2,device-3,device-4,device-5
+  labels:
+    app: test-rollout
+    rollout-id: f9fa47fd-3bc6-44b7-8e3a-15dd8d057064
+    rollout-manager: "true"
+  name: rollout-analysis-f9fa47fd-3bc6-44b7-8e3a-15dd8d057064
+  namespace: default
+spec:
+  args:
+  - name: rollout-percentage
+  - name: device-subset
+  metrics:
+  - count: 1
+    failureCondition: result[0] == "failure"
+    interval: 10s
+    name: cms-validation
+    provider:
+      job:
+        spec:
+          backoffLimit: 2
+          template:
+            spec:
+              containers:
+              - args:
+                - /bin/sh
+                - -c
+                - |2
+
+                  HTTP_CODE=$(curl -s -w "%{http_code}" -o /tmp/response.txt \
+                    -X POST "$CMS_BASE_URL$CMS_CONFIG_ROLLOUT_PATH" \
+                    -H "Content-Type: application/json" \
+                    -d @- <<EOF
+                  {
+                    "deviceIds": $DEVICES_JSON,
+                    "rolloutName": "$ROLLOUT_ID",
+                    "templateIds": $TEMPLATES_JSON
+                  }
+                  EOF
+                  )
+
+                  if [ "$HTTP_CODE" = "201" ]; then
+                    echo "success"
+                    exit 0
+                  else
+                    echo "failure: HTTP $HTTP_CODE"
+                    cat /tmp/response.txt 2>/dev/null
+                    exit 1
+                  fi
+                env:
+                - name: ROLLOUT_ID
+                  value: f9fa47fd-3bc6-44b7-8e3a-15dd8d057064
+                - name: ROLLOUT_NAME
+                  value: test-rollout
+                - name: CMS_BASE_URL
+                  value: http://localhost:8081
+                - name: CMS_CONFIG_ROLLOUT_PATH
+                  value: /api/configurations/devices/config-rollout
+                - name: TEMPLATES_JSON
+                  value: '["template-1","template-2"]'
+                - name: DEVICES_JSON
+                  value: '{{args.device-subset}}'
+                - name: ROLLOUT_PERCENTAGE
+                  value: '{{args.rollout-percentage}}'
+                - name: CMS_BASE_URL
+                  value: http://localhost:8081
+                image: curlimages/curl:latest
+                name: cms-validator
+              restartPolicy: Never
+    successCondition: result[0] == "success"
