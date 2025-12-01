@@ -1,4 +1,3 @@
-# AI Generated file
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
@@ -11,7 +10,7 @@ metadata:
   name: c4248c96-b070-4067-bf34-c390b99a0b5a
   namespace: default
 spec:
-  paused: false
+  paused: true
   replicas: 1
   selector:
     matchLabels:
