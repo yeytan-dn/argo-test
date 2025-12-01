@@ -10,7 +10,7 @@ metadata:
   name: f8c18536-43c0-4276-8dab-5748a3c246de
   namespace: default
 spec:
-  paused: true
+  paused: false
   replicas: 1
   selector:
     matchLabels:
