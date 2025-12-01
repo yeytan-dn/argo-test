@@ -1,0 +1,50 @@
+# AI Generated file
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  annotations:
+    rollout-manager/devices: device-1,device-2,device-3,device-4,device-5
+  labels:
+    app: example-rollout
+    rollout-id: ab94b633-dc26-4a6a-9b2d-a1ff685364b7
+    rollout-manager: "true"
+  name: rollout-analysis-ab94b633-dc26-4a6a-9b2d-a1ff685364b7
+  namespace: default
+spec:
+  args:
+  - name: rollout-percentage
+  - name: device-subset
+  metrics:
+  - count: 1
+    failureCondition: result[0] == "failure"
+    interval: 10s
+    name: cms-validation
+    provider:
+      job:
+        spec:
+          backoffLimit: 2
+          template:
+            spec:
+              containers:
+              - args: null
+                env:
+                - name: ROLLOUT_ID
+                  value: ab94b633-dc26-4a6a-9b2d-a1ff685364b7
+                - name: ROLLOUT_NAME
+                  value: example-rollout
+                - name: CMS_BASE_URL
+                  value: http://cms-service:8080
+                - name: CMS_CONFIG_ROLLOUT_PATH
+                  value: /api/configurations/devices/config-rollout
+                - name: TEMPLATES_JSON
+                  value: '["template-1","template-2"]'
+                - name: DEVICES_JSON
+                  value: '{{args.device-subset}}'
+                - name: ROLLOUT_PERCENTAGE
+                  value: '{{args.rollout-percentage}}'
+                - name: CMS_BASE_URL
+                  value: http://cms-service:8080
+                image: curlimages/curl:latest
+                name: cms-validator
+              restartPolicy: Never
+    successCondition: result[0] == "success"
