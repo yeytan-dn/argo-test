@@ -1,0 +1,63 @@
+# AI Generated file
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  annotations:
+    rollout-manager/devices: device-1,device-2,device-3,device-4,device-5
+  labels:
+    app: example-rollout
+    rollout-id: 4f59f16e-726a-4922-bc90-e4c068da053f
+    rollout-manager: "true"
+  name: 4f59f16e-726a-4922-bc90-e4c068da053f
+  namespace: default
+spec:
+  paused: false
+  replicas: 1
+  selector:
+    matchLabels:
+      app: example-rollout
+  strategy:
+    canary:
+      steps:
+      - setWeight: 5
+      - analysis:
+          args:
+          - name: rollout-percentage
+            value: "5"
+          - name: device-subset
+            value: '["device-1"]'
+          templates:
+          - templateName: rollout-analysis-4f59f16e-726a-4922-bc90-e4c068da053f
+      - pause:
+          duration: 60m
+      - setWeight: 20
+      - pause:
+          duration: 60m
+      - setWeight: 50
+      - analysis:
+          args:
+          - name: rollout-percentage
+            value: "50"
+          - name: device-subset
+            value: '["device-2"]'
+          templates:
+          - templateName: rollout-analysis-4f59f16e-726a-4922-bc90-e4c068da053f
+      - pause:
+          duration: 60m
+      - setWeight: 100
+      - analysis:
+          args:
+          - name: rollout-percentage
+            value: "100"
+          - name: device-subset
+            value: '["device-3","device-4","device-5"]'
+          templates:
+          - templateName: rollout-analysis-4f59f16e-726a-4922-bc90-e4c068da053f
+  template:
+    metadata:
+      labels:
+        app: example-rollout
+    spec:
+      containers:
+      - image: nginx:1.25-alpine
+        name: example-rollout
