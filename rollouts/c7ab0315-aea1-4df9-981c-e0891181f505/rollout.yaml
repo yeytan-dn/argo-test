@@ -8,7 +8,7 @@ metadata:
     app: example-rollout
     rollout-id: c7ab0315-aea1-4df9-981c-e0891181f505
     rollout-manager: "true"
-    rollout-started: "false"
+    rollout-started: "true"
   name: c7ab0315-aea1-4df9-981c-e0891181f505
   namespace: default
 spec:
