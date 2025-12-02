@@ -1,0 +1,50 @@
+# AI Generated file
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  annotations:
+    rollout-manager/devices: device-1,device-2,device-3,device-4,device-5
+  labels:
+    app: example-rollout
+    rollout-id: 8d8cb152-aca4-464b-a4c3-6923d9f4f6c0
+    rollout-manager: "true"
+  name: rollout-analysis-8d8cb152-aca4-464b-a4c3-6923d9f4f6c0
+  namespace: default
+spec:
+  args:
+  - name: rollout-percentage
+  - name: device-subset
+  metrics:
+  - count: 1
+    failureCondition: result[0] == "failure"
+    interval: 10s
+    name: cms-validation
+    provider:
+      job:
+        spec:
+          backoffLimit: 2
+          template:
+            spec:
+              containers:
+              - args: null
+                env:
+                - name: ROLLOUT_ID
+                  value: 8d8cb152-aca4-464b-a4c3-6923d9f4f6c0
+                - name: ROLLOUT_NAME
+                  value: example-rollout
+                - name: CMS_BASE_URL
+                  value: http://mock-cms-service.default.svc.cluster.local:8081
+                - name: CMS_CONFIG_ROLLOUT_PATH
+                  value: /api/configurations/devices/config-rollout
+                - name: TEMPLATES_JSON
+                  value: '["template-1","template-2"]'
+                - name: DEVICES_JSON
+                  value: '{{args.device-subset}}'
+                - name: ROLLOUT_PERCENTAGE
+                  value: '{{args.rollout-percentage}}'
+                - name: CMS_BASE_URL
+                  value: http://mock-cms-service.default.svc.cluster.local:8081
+                image: nginx:1.25-alpine
+                name: cms-validator
+              restartPolicy: Never
+    successCondition: result[0] == "success"
