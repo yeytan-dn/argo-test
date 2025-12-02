@@ -54,7 +54,7 @@ spec:
   template:
     metadata:
       annotations:
-        rollout-started-at: "2025-12-02T13:39:15Z"
+        rollout-started-at: "2025-12-02T13:39:30Z"
       labels:
         app: example-rollout
     spec:
