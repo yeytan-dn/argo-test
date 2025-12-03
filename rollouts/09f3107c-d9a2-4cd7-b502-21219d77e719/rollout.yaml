@@ -1,4 +1,3 @@
-# AI Generated file
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
@@ -65,6 +64,8 @@ spec:
           - templateName: rollout-analysis-09f3107c-d9a2-4cd7-b502-21219d77e719
   template:
     metadata:
+      annotations:
+        rollout-started-at: "2025-12-03T10:07:53Z"
       labels:
         app: example-rollout
     spec:
