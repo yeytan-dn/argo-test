@@ -1,0 +1,74 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  annotations:
+    notifications.argoproj.io/subscribe.on-analysis-run-failed.rollout-manager-webhook: ""
+    notifications.argoproj.io/subscribe.on-analysis-run-running.rollout-manager-webhook: ""
+    notifications.argoproj.io/subscribe.on-rollout-aborted.rollout-manager-webhook: ""
+    notifications.argoproj.io/subscribe.on-rollout-completed.rollout-manager-webhook: ""
+    notifications.argoproj.io/subscribe.on-rollout-paused.rollout-manager-webhook: ""
+    notifications.argoproj.io/subscribe.on-rollout-updated.rollout-manager-webhook: ""
+    rollout-manager/devices: device-1,device-2,device-3,device-4,device-5
+    rollout-manager/devices-stage-0: device-1
+    rollout-manager/devices-stage-1: ""
+    rollout-manager/devices-stage-2: device-2
+    rollout-manager/devices-stage-3: device-3,device-4,device-5
+    rollout-manager/templates: template-1,template-2
+  labels:
+    app: example-rollout
+    rollout-id: ea5a0bac-9adf-438d-9f7e-3b35f9e67f3c
+    rollout-manager: "true"
+  name: ea5a0bac-9adf-438d-9f7e-3b35f9e67f3c
+  namespace: argo-rollouts
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: example-rollout
+  strategy:
+    canary:
+      steps:
+      - setWeight: 5
+      - analysis:
+          args:
+          - name: rollout-percentage
+            value: "5"
+          - name: device-subset
+            value: '["device-1"]'
+          templates:
+          - templateName: rollout-analysis-ea5a0bac-9adf-438d-9f7e-3b35f9e67f3c
+      - pause:
+          duration: 2m
+      - setWeight: 20
+      - pause:
+          duration: 2m
+      - setWeight: 50
+      - analysis:
+          args:
+          - name: rollout-percentage
+            value: "50"
+          - name: device-subset
+            value: '["device-2"]'
+          templates:
+          - templateName: rollout-analysis-ea5a0bac-9adf-438d-9f7e-3b35f9e67f3c
+      - pause:
+          duration: 2m
+      - setWeight: 100
+      - analysis:
+          args:
+          - name: rollout-percentage
+            value: "100"
+          - name: device-subset
+            value: '["device-3","device-4","device-5"]'
+          templates:
+          - templateName: rollout-analysis-ea5a0bac-9adf-438d-9f7e-3b35f9e67f3c
+  template:
+    metadata:
+      labels:
+        app: example-rollout
+    spec:
+      containers:
+      - image: nginx:1.25-alpine
+        name: example-rollout
+        ports:
+        - containerPort: 80
