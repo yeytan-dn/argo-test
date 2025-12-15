@@ -21,7 +21,7 @@ metadata:
   name: ea5a0bac-9adf-438d-9f7e-3b35f9e67f3c
   namespace: argo-rollouts
 spec:
-  paused: true
+  paused: false
   replicas: 1
   selector:
     matchLabels:
