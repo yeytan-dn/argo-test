@@ -48,6 +48,8 @@ spec:
       - setWeight: 100
   template:
     metadata:
+      annotations:
+        rollout-started-at: "2025-12-21T10:01:30Z"
       labels:
         app: example-rollout
     spec:
