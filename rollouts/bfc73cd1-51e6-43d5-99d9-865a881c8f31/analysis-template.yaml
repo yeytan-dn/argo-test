@@ -1,0 +1,83 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  annotations:
+    rollout-manager/devices: device-1,device-2,device-3,device-4,device-5
+    rollout-manager/templates: 7e4f139c-3056-4c04-90ba-83037c34045d
+  labels:
+    app: example-rollout
+    rollout-id: bfc73cd1-51e6-43d5-99d9-865a881c8f31
+    rollout-manager: "true"
+  name: rollout-analysis-bfc73cd1-51e6-43d5-99d9-865a881c8f31
+  namespace: argo-rollouts
+spec:
+  args:
+  - name: rollout-percentage
+  - name: device-subset
+  metrics:
+  - count: 1
+    failureCondition: result[0] == "failure"
+    failureLimit: 0
+    name: cms-config-apply
+    provider:
+      job:
+        spec:
+          backoffLimit: 2
+          template:
+            spec:
+              containers:
+              - args:
+                - /bin/sh
+                - -c
+                - |2
+
+                  HTTP_CODE=$(curl -s -w "%{http_code}" -o /tmp/response.txt \
+                    -X POST "$CMS_BASE_URL$CMS_CONFIG_ROLLOUT_PATH" \
+                    -H "Content-Type: application/json" \
+                    -d @- <<EOF
+                  {
+                    "deviceIds": $DEVICES_JSON,
+                    "rolloutName": "$ROLLOUT_ID",
+                    "templateIds": $TEMPLATES_JSON
+                  }
+                  EOF
+                  )
+
+                  if [ "$HTTP_CODE" = "201" ]; then
+                    echo "success"
+                    exit 0
+                  else
+                    echo "failure: HTTP $HTTP_CODE"
+                    cat /tmp/response.txt 2>/dev/null
+                    exit 1
+                  fi
+                env:
+                - name: ROLLOUT_ID
+                  value: bfc73cd1-51e6-43d5-99d9-865a881c8f31
+                - name: ROLLOUT_NAME
+                  value: example-rollout
+                - name: CMS_BASE_URL
+                  value: http://config-manager:3100
+                - name: CMS_CONFIG_ROLLOUT_PATH
+                  value: /api/configurations/devices/config-rollout
+                - name: TEMPLATES_JSON
+                  value: '["7e4f139c-3056-4c04-90ba-83037c34045d"]'
+                - name: DEVICES_JSON
+                  value: '{{args.device-subset}}'
+                - name: ROLLOUT_PERCENTAGE
+                  value: '{{args.rollout-percentage}}'
+                - name: CMS_BASE_URL
+                  value: http://config-manager:3100
+                image: nginx:1.25-alpine
+                name: cms-config-applier
+              restartPolicy: Never
+    successCondition: result[0] == "success"
+  - count: 4
+    initialDelay: 30s
+    interval: 30s
+    name: device-success-rate
+    provider:
+      web:
+        jsonPath: '{$.data.successPercent}'
+        url: http://rollout-manager-service.rollout-manager.svc.cluster.local:8080/api/v1/rollouts/bfc73cd1-51e6-43d5-99d9-865a881c8f31/metrics
+    successCondition: result == 1
