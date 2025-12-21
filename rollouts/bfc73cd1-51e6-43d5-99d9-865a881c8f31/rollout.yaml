@@ -64,6 +64,8 @@ spec:
           - templateName: rollout-analysis-bfc73cd1-51e6-43d5-99d9-865a881c8f31
   template:
     metadata:
+      annotations:
+        rollout-started-at: "2025-12-21T08:23:13Z"
       labels:
         app: example-rollout
     spec:
